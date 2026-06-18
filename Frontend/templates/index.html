@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burnout Risk Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            /* Background Color - Blue Gradient */
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container Styles */
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2a5298;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        /* Form Grid Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px 30px;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+
+        .input-group input[type="number"], .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            appearance: none; 
+            background-color: #f8f8f8;
+            font-size: 14px;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #2a5298;
+            outline: none;
+        }
+
+        /* Button Styles */
+        button[type="submit"] {
+            grid-column: 1 / -1; 
+            padding: 15px 20px;
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-top: 15px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        /* Result Box Styles */
+        #prediction-result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .risk-low {
+            background-color: #e6ffed;
+            color: #28a745;
+            border: 2px solid #28a745;
+        }
+
+        .risk-high {
+            background-color: #ffe6e6;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+        }
+        
+        .result-text {
+            font-size: 24px;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+        
+        .probability-text {
+            font-size: 16px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        /* New Suggestions Section Styles */
+        #suggestions-section {
+            margin-top: 25px;
+            text-align: left;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background-color: #f4f4f9;
+            border: 1px solid #ddd;
+        }
+        
+        #suggestions-section h3 {
+            color: #2a5298;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        #suggestions-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #suggestions-section li {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        #suggestions-section li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Student Mental Burnout Risk Predictor</h1>
+    
+    <form id="prediction-form" class="form-grid">
+        {% for feature in feature_names %}
+        <div class="input-group">
+            <label for="{{ feature }}">{{ loop.index }}. {{ feature|replace('_', ' ')|title }}</label>
+            
+            {% if feature == 'anxiety_level' %}
+                <input type="number" id="{{ feature }}" name="{{ feature }}" required min="1" max="5" step="1" placeholder="Enter value (1-5)">
+            
+            {% elif feature == 'depression' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="None/Minimal">None/Minimal (1)</option>
+                    <option value="Mild">Mild (2)</option>
+                    <option value="Moderate">Moderate (3)</option>
+                    <option value="Moderately Severe">Moderately Severe (4)</option>
+                    <option value="Severe">Severe (5)</option>
+                </select>
+
+            {% elif feature == 'blood_pressure' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Normal">Normal (1)</option>
+                    <option value="Elevated">Elevated (2)</option>
+                    <option value="Hypertension Stage 1">Hypertension Stage 1 (3)</option>
+                    <option value="Hypertension Stage 2">Hypertension Stage 2 (4)</option>
+                    <option value="Hypertensive Crisis">Hypertensive Crisis (5)</option>
+                </select>
+
+            {% elif feature == 'future_career_concerns' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Very Confident">Very Confident (1)</option>
+                    <option value="Confident">Confident (2)</option>
+                    <option value="Neutral/Slightly Concerned">Neutral/Slightly Concerned (3)</option>
+                    <option value="Worried">Worried (4)</option>
+                    <option value="Extremely Worried">Extremely Worried (5)</option>
+                </select>
+
+            {% elif feature == 'mental_health_history' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="No">No (0)</option>
+                    <option value="Yes">Yes (1)</option>
+                </select>
+            {% elif feature == 'sleep_quality' or feature == 'self_esteem' or feature == 'peer_pressure' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Very Low">Very Low (1)</option>
+                    <option value="Low">Low (2)</option>
+                    <option value="Average">Average (3)</option>
+                    <option value="High">High (4)</option>
+                    <option value="Very High">Very High (5)</option>
+                </select>
+            {% elif feature == 'breathing_problem' or feature == 'headache' or feature == 'bullying' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Never">Never (1)</option>
+                    <option value="Rarely">Rarely (2)</option>
+                    <option value="Sometimes">Sometimes (3)</option>
+                    <option value="Often">Often (4)</option>
+                    <option value="Always">Always (5)</option>
+                </select>
+            {% elif feature == 'noise_level' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Low">Low (1)</option>
+                    <option value="Medium">Medium (3)</option>
+                    <option value="High">High (5)</option>
+                </select>
+            {% elif feature == 'living_conditions' or feature == 'safety' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Worst" {% if feature == 'living_conditions' %}selected{% endif %}>Worst/Very Unsafe (1)</option>
+                    <option value="Poor">Poor/Unsafe (2)</option>
+                    <option value="Average" {% if feature != 'living_conditions' %}selected{% endif %}>Average (3)</option>
+                    <option value="Good">Good/Safe (4)</option>
+                    <option value="Best">Best/Very Safe (5)</option>
+                </select>
+            {% elif feature == 'basic_needs' or feature == 'academic_performance' or feature == 'teacher_student_relationship' or feature == 'social_support' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Very Poor">Very Poor (1)</option>
+                    <option value="Poor">Poor (2)</option>
+                    <option value="Average">Average (3)</option>
+                    <option value="Good">Good (4)</option>
+                    <option value="Excellent">Excellent (5)</option>
+                </select>
+            {% elif feature == 'study_load' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Very Light">Very Light (1)</option>
+                    <option value="Light">Light (2)</option>
+                    <option value="Average">Average (3)</option>
+                    <option value="Heavy">Heavy (4)</option>
+                    <option value="Very Heavy">Very Heavy (5)</option>
+                </select>
+            {% elif feature == 'extracurricular_activities' %}
+                <select id="{{ feature }}" name="{{ feature }}" required>
+                    <option value="Very Rare">Very Rare (1)</option>
+                    <option value="Rare">Rare (2)</option>
+                    <option value="Average">Average (3)</option>
+                    <option value="Often">Often (4)</option>
+                    <option value="Very Often">Very Often (5)</option>
+                </select>
+            {% endif %}
+            
+        </div>
+        {% endfor %}
+        <button type="submit">Get Burnout Prediction</button>
+    </form>
+    
+    <div id="prediction-result" style="display: none;">
+        </div>
+    
+    <div id="suggestions-section" style="display: none;">
+        <h3> Recommendations for You</h3>
+        <ul id="suggestions-list">
+            </ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#prediction-form').submit(function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        var url = form.attr('action') || '/predict'; 
+        var resultDiv = $('#prediction-result');
+        var suggestionsSection = $('#suggestions-section');
+        var suggestionsList = $('#suggestions-list');
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form.serialize(),
+            success: function(response) {
+                // 1. Update Prediction Result
+                resultDiv.removeClass('risk-low risk-high').show();
+                
+                if (response.risk_level === 'High') {
+                    resultDiv.addClass('risk-high');
+                } else {
+                    resultDiv.addClass('risk-low');
+                }
+                
+                resultDiv.html(`
+                    <span class="result-text">${response.status}</span>
+                    <span class="probability-text">Probability: ${response.probability}</span>
+                `);
+                
+                // 2. Display Suggestions (CRITICAL: This is the fixed logic)
+                suggestionsList.empty(); // Clear previous suggestions
+                response.suggestions.forEach(function(suggestion) {
+                    // Convert **text** to <strong>text</strong> for HTML bolding
+                    // This fixes the issue where suggestions weren't showing or formatting correctly
+                    var htmlSuggestion = suggestion.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    suggestionsList.append(`<li>${htmlSuggestion}</li>`);
+                });
+                suggestionsSection.show(); // Show the suggestions panel
+
+            },
+            error: function(xhr, status, error) {
+                var errorMessage = 'An unknown error occurred.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                
+                // Handle error display
+                resultDiv.removeClass('risk-low risk-high').addClass('risk-high').show();
+                resultDiv.html(`<span class="result-text">Error:</span><span class="probability-text">${errorMessage}</span>`);
+                
+                // Hide suggestions on error
+                suggestionsSection.hide(); 
+                
+                console.error("Prediction Error:", error);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

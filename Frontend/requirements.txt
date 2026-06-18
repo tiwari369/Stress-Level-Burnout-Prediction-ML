@@ -1,0 +1,16 @@
+Flask
+pandas
+numpy
+scikit-learn
+xgboost
+imblearn
+
+# python -m venv venv
+# .\venv\Scripts\activate
+#pip install -r requirements.txt
+# .\venv\Scripts\python.exe -m pip install flask
+# .\venv\Scripts\python.exe -m pip install pandas
+# .\venv\Scripts\python.exe -m pip install xgboost
+# .\venv\Scripts\python.exe -m pip install imblearn
+# .\venv\Scripts\python.exe -m pip install scikit-learn==1.6.1
+# .\venv\Scripts\python.exe app.py
